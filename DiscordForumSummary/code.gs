@@ -2,8 +2,8 @@ function getBaseURL() {
   return PropertiesService.getScriptProperties().getProperty('BASE_URL');
 }
 
-function getOgpUrl() {
-  return PropertiesService.getScriptProperties().getProperty('OGP_URL');
+function getIconUrl() {
+  return PropertiesService.getScriptProperties().getProperty('ICON_URL');
 }
 
 function getPassword() {
@@ -36,6 +36,26 @@ function getForum(forumId) {
     } catch(e) {
       return e;
     }
+}
+
+function getForumFirstPost(channelId) {
+  const url = `${getBaseURL()}messages.cgi?channel=${channelId}&limit=1&after=1`;
+  try {
+    const response = UrlFetchApp.fetch(url, {
+      'method': 'get',
+      'headers': {
+        'X-Auth-Token': getPassword()
+      },
+      'muteHttpExceptions': true
+    });
+    const requestResult = JSON.parse(response.getContentText());
+    if(requestResult.error) {
+      throw requestResult.error;
+    }
+    return requestResult[0];
+  } catch(e) {
+    return e;
+  }
 }
 
 function postWebhook(param) {
@@ -121,16 +141,33 @@ function pickDateTimeFromTitle(input) {
     };
 }
 
+function getSessionParamRegExps() {
+  return {
+    'ツール':   /使用ツール\s*[:：]\s*(.*)\n/,
+    '所要時間': /予定時間\s*[:：]\s*(.*)\n/,
+    '形式':  /セッション形式\s*[:：]\s*(.*)\n/,
+  };
+}
+
 function buildWebhookParam(groupedForums) {
     return {
       username: '卓募集状況',
-      avatar_url: getOgpUrl(),
+      avatar_url: getIconUrl(),
       content: '現在募集中の卓は以下のとおりです\n' + groupedForums.open.map((f)=>{
           const rawTitle = f.name;
           const parsedTitle = pickDateTimeFromTitle(rawTitle.replace(/【.+】/, ''));
           const title = ['日時未定', '日時すり合わせ', '日程未定', '日程すり合わせ'].reduce((current, target)=>{return current.replace(target, '')}, parsedTitle.datetimeRevmoed).trim();
           const datetime = parsedTitle.text || '日時未定';
-          return `**${title}** (開催日時：${datetime})\nhttps://discord.com/channels/${getGuildId()}/${f.id}`;
+
+          const headPost = getForumFirstPost(f.id);
+          const regexps = getSessionParamRegExps();
+          const params = [];
+          for(var column in regexps) {
+            const execResult = regexps[column].exec(headPost.content);
+            if(execResult) { params.push(`${column}: ${execResult[1]}`); }
+          }
+
+          return `**${title}** (開催日時：${datetime})\nhttps://discord.com/channels/${getGuildId()}/${f.id}\n　${params.join('\n　')}`;
         }).join('\n\n')
     };
 }
