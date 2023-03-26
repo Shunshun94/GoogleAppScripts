@@ -1,3 +1,7 @@
+function getFileId() {
+  return PropertiesService.getScriptProperties().getProperty('GSS_ID');
+}
+
 function getBaseURL() {
   return PropertiesService.getScriptProperties().getProperty('BASE_URL');
 }
@@ -16,6 +20,44 @@ function getGuildId() {
 
 function getForumId() {
   return PropertiesService.getScriptProperties().getProperty('FORUM_ID');
+}
+
+function behaviorCheck() {
+  console.log(updateForumIds([1,2,3]));
+}
+
+function updateForumIds(idList = [], fileId = getFileId(), sheetId = 'DiscordForumSummary_forumIds') {
+  const sheet = SpreadsheetApp.openById(fileId).getSheetByName(sheetId);
+  const sheetHeight = sheet.getMaxRows();
+  const listLength = idList.length;
+  if(listLength > sheetHeight) {
+    sheet.insertRows( listLength - sheetHeight );
+  }
+  sheet.clear();
+  const contents = idList.map((id)=>{return [id]});
+
+  sheet.getRange(1, 1, listLength).setValues(contents);
+  return getPastForumIds(fileId, sheetId);
+}
+
+function getPastForumIds(fileId = getFileId(), sheetId = 'DiscordForumSummary_forumIds') {
+  return SpreadsheetApp.openById(fileId).getSheetByName(sheetId).getDataRange().getValues().flat();
+}
+
+function handleForumIds(newIdList = [], fileId = getFileId(), sheetId = 'DiscordForumSummary_forumIds') {
+  const pastList = getPastForumIds();
+  const hasNewForum = newIdList.some((d)=>{ return ! pastList.includes(d); });
+  if(hasNewForum) {
+    return {
+      hasNewForum: true,
+      forumList:   updateForumIds(newIdList, fileId, sheetId)
+    };
+  } else {
+    return {
+      hasNewForum: false,
+      forumList:   pastList
+    };
+  }
 }
 
 function getForum(forumId) {
@@ -172,13 +214,17 @@ function buildWebhookParam(groupedForums) {
     };
 }
 
-function confirm() {
+function exec() {
   try {
     const activeForums = getForum(getForumId());
     const groupedForums = groupingForums(activeForums);
-    if(groupedForums.open.length) {  
-      const requestBody = buildWebhookParam(groupedForums);
-      postWebhook(requestBody);
+    if(groupedForums.open.length) {
+      const openIds = groupedForums.open.map((f)=>{return f.id});
+      const handleResult = handleForumIds(openIds);
+      if(handleResult.hasNewForum) {
+        const requestBody = buildWebhookParam(groupedForums);
+        postWebhook(requestBody);
+      }
     }
   } catch (e) {
     console.error(e);
