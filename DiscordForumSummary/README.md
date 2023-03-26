@@ -23,3 +23,7 @@
 ### `ICON_URL`
 
 投稿されるサマリーのアイコン
+
+### `GSS_ID`
+
+Open なフォーラムの一覧を保存するために使う Google Sheets の ID
