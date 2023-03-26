@@ -144,7 +144,7 @@ function pickDateTimeFromTitle(input) {
     const text = input.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
         return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
     }).trim();
-    const dateRegexpResult = /([01]?[0-9])\s*[\/月\-・]\s*([0-3]?[0-9])\s*日?\s*[日月火水木金土\s\　]*/.exec(text);
+    const dateRegexpResult = /([01]?[0-9])\s*[\/／月\-・]\s*([0-3]?[0-9])\s*日?\s*[日月火水木金土\s\　]*/.exec(text);
     const textRemovedDate = (dateRegexpResult ? text.replace(dateRegexpResult[0], '') : text).trim();
 
     const timeRegexpResult = /([012]?[0-9])\s*[\:：時]\s*([0-5][0-9])?\s*[分～~]*/.exec(textRemovedDate);
