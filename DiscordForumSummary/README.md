@@ -1,6 +1,14 @@
 # フォーラムで行われた卓募集のサマリを Webhook に投げる GAS
 
+## 利用しているプログラム類
+
+### SharedCLITools
+
 諸事情で単体では動かないので [SharedCLITools](https://github.com/Shunshun94/SharedCLITools) 掲載のツール群と連携させて動かす。
+
+### DatetimePicker
+
+[DatetimePicker](https://github.com/Shunshun94/shared/tree/master/other/io/github/shunshun94/util/DatetimePicker) で日付を取得している。
 
 ## 環境変数
 
