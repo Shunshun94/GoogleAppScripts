@@ -1,3 +1,30 @@
+const getStartDate = () => {
+  const param = PropertiesService.getScriptProperties().getProperty('START_DATE');
+  if(param) {
+    return new Date(param);
+  } else {
+    return new Date();
+  }
+};
+
+const getEndDate = () => {
+  const param = PropertiesService.getScriptProperties().getProperty('END_DATE');
+  if(param) {
+    return new Date(param);
+  } else {
+    return getYearLastMonth(new Date());
+  }
+};
+
+const getDays = () => {
+  const param = PropertiesService.getScriptProperties().getProperty('DAYS');
+  if(param) {
+    return param.split(',').map((n)=>{return Number(n)});
+  } else {
+    return [2,4,6];
+  }
+};
+
 const getHolidays = (year = (new Date()).getFullYear()) => {
   const result = {};
   CalendarApp.getCalendarById('ja.japanese#holiday@group.v.calendar.google.com').getEvents(
@@ -61,9 +88,10 @@ const getTargetDaysByMonth = (days, startDay, holidays) => {
 
 const confirm = () => {console.log(getTargetDays())};
 
-const getTargetDays = (days = [2, 4, 6], tmp_startDate = new Date(), tmp_endDate = getYearLastMonth(new Date())) => {
-  let startDate = getMonthHead(tmp_startDate);
-  const endDate = getMonthTail(tmp_endDate);
+const getTargetDays = () => {
+  const days    = getDays();
+  let startDate = getMonthHead(getStartDate());
+  const endDate = getMonthTail(getEndDate());
   const result = [];
   const holidays = getHolidays(startDate.getFullYear());
 

@@ -8,18 +8,20 @@
     <div id="console"><button onclick="window.print();">印刷</button></div>
     <div id="print_guide">
       <h1>印刷ガイド</h1>
-      <p>Google Chrome の機能で印刷している前提で記載しています</p>
+      <p>Google Chrome・Microsoft Edge の機能で印刷している前提で記載しています</p>
       <ul>
         <li>用紙サイズを「B5」にしてください</li>
         <li>余白を「なし」にしてください</li>
         <li>ページを「カスタム」にし、「2-」を入力すると印刷ガイドを印刷から除外できます</li>
       </ul>
+      </hr>
+      <p>FireFox の場合、「ページ設定」の「余白とヘッダー／フッダー」から余白およびヘッダー・フッターを印刷しないように設定してください。</p>
     </div>
     <div id="result">
     <?
       const DAYS_DISPLAY_CHARS = ['にちようび', 'げつようび', 'かようび', 'すいようび', 'もくようび', 'きんようび', 'どようび']
-      const days = [2, 4, 6]; // 火曜日、木曜日、土曜日
-      const printDayList = getTargetDays( days );
+      const days = getDays();
+      const printDayList = getTargetDays();
       printDayList.forEach((monthInfo, mi, monthList)=>{
     ?>
       <div class="card">

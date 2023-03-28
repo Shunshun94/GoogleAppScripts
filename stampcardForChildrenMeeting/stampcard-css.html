@@ -11,8 +11,11 @@
 .card {
     width: 87mm;
     height: 128mm;
-    padding:4mm;
+    padding-top:2mm;
+    padding-right:0mm;
+    padding-left:12mm;
     display:inline-block;
+    vertical-align: top;
 }
 
 .month {
@@ -26,7 +29,7 @@
 }
 
 .seal {
-    width: 27%;
+    width: 30%;
     display:inline-block;
 }
 .seal_header {
@@ -70,11 +73,11 @@
 
 @media print {
     #console {
-        display:none;
+    display:none;
     }
     #print_guide {
-        display:block;
-        height: 180mm;
+    display:block;
+    height: 180mm;
     }
 }
 </style>
