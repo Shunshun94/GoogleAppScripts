@@ -57,8 +57,16 @@ const getMonthTail = (target) => {
   return new Date(Number(getMonthHead(getNextMonthAsDate(target))) - 1);
 };
 
+const getYearTerm = (date) => {
+  if(date.getMonth() > 2) {
+    return date.getFullYear();
+  } else {
+    return date.getFullYear() - 1;
+  }
+};
+
 const getYearLastMonth = (start) => {
-  if(start.getMonth() > 3) {
+  if(start.getMonth() > 2) {
     return new Date(`${start.getFullYear() + 1}/3/31`);
   } else {
     return new Date(`${start.getFullYear()}/3/31`);
@@ -69,6 +77,7 @@ const getTargetDaysByMonth = (days, startDay, holidays) => {
   const lastDayAsNumber = Number(getMonthTail(startDay));
   let targetDayAsNumber = Number(startDay);
   const result = {
+    yearTerm: getYearTerm(startDay),
     month: startDay.getMonth() + 1,
     dayList: []
   };

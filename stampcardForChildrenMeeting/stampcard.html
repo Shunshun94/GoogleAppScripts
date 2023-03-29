@@ -5,8 +5,11 @@
     <?!= HtmlService.createHtmlOutputFromFile('stumpcard-css').getContent(); ?>
   </head>
   <body>
-    <div id="console"><button onclick="window.print();">印刷</button></div>
+    <div id="console"><button onclick="window.print();">印刷</button> <strong>← 印刷はこのボタンから実施して下さい！！！！！！！</strong></div>
     <div id="print_guide">
+      <h1>このページはどんなものを出力するのか</h1>
+      <p>今月から今年度末までのシール帳を出力します。入会月からの分だけを印刷するので使わない分のシール帳は印刷されません。</p>
+      <p>新年度の分は4月に準備してください。</p>
       <h1>印刷ガイド</h1>
       <p>Google Chrome・Microsoft Edge の機能で印刷している前提で記載しています</p>
       <ul>
@@ -16,6 +19,10 @@
       </ul>
       </hr>
       <p>FireFox の場合、「ページ設定」の「余白とヘッダー／フッダー」から余白およびヘッダー・フッターを印刷しないように設定してください。</p>
+      <hr/>
+      <h1>印刷ページは以下からアクセス</h1>
+      <p>URL: https://script.google.com/macros/s/AKfycbxyc-ylZOHxk45voE3eelpu-iTB3A0oOpjlIy0x-w1uJXlTFjxUvg33VfXt95VSnNHe9g/exec</p>
+      <p>以下は同じ URL にアクセスするための QR コードです。<br/><img src="https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfycbxyc-ylZOHxk45voE3eelpu-iTB3A0oOpjlIy0x-w1uJXlTFjxUvg33VfXt95VSnNHe9g%2Fexec" /></p>
     </div>
     <div id="result">
     <?
@@ -25,7 +32,10 @@
       printDayList.forEach((monthInfo, mi, monthList)=>{
     ?>
       <div class="card">
-        <span class="month"><?= monthInfo.month ?>がつ</span>
+        <span class="header">
+          <span class="month"><?= monthInfo.month ?>がつ</span>
+          <span class="yearTerm"><?= monthInfo.yearTerm ?>年度</span>
+        </span>
         <div class="seals">
           <?
             days.forEach((dayId)=>{
