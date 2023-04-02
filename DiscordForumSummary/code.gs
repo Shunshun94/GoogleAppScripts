@@ -198,7 +198,7 @@ function buildWebhookParam(groupedForums) {
       content: '現在募集中の卓は以下のとおりです\n' + groupedForums.open.map((f)=>{
           const rawTitle = f.name;
           const parsedTitle = pickDateTimeFromTitle(rawTitle.replace(/【.+】/, ''));
-          const title = ['日時未定', '日時すり合わせ', '日程未定', '日程すり合わせ'].reduce((current, target)=>{return current.replace(target, '')}, parsedTitle.datetimeRevmoed).trim();
+          const title = ['日時未定', '日時すり合わせ', '日程未定', '日程すり合わせ', '日付すり合わせ', '日付未定'].reduce((current, target)=>{return current.replace(target, '')}, parsedTitle.datetimeRevmoed).trim();
           const datetime = parsedTitle.text || '日時未定';
 
           const headPost = getForumFirstPost(f.id);
