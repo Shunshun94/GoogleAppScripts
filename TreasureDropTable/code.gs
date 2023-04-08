@@ -54,13 +54,13 @@ function getRollResults(tableName, count, option) {
   const table = getTable(tableName);
 
   if(count === 1) {
-    return getRollResult(table, option);
+    return `トレジャードロップ表（${tableName}） ＞ ${getRollResult(table, option)}`;
   }
 
   const result = [];
   for(var i = 0; i < count; i++) {
     result.push(`#${i + 1}`);
-    result.push(getRollResult(table, option));
+    result.push(`トレジャードロップ表（${tableName}） ＞ ${getRollResult(table, option)}`);
     result.push('');
   }
   return result.join('\n').trim();
@@ -89,8 +89,9 @@ function doGet(e) {
       secret: false,
     }));
   } catch (e) {
+    console.error(e, `params = ${params}`, `repeat = ${repeat}`);
     output.setContent(JSON.stringify({
-      ok: false,
+      ok: true,
       text: e,
       secret: false,
     }));
