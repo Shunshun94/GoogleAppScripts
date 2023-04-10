@@ -72,9 +72,13 @@ function behavior() {
 
 function doGet(e) {
   const repeat = Number(e.parameter.repeat);
-  const params = e.parameter.params.trim().replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
+  const params = (e.parameter.params || '').trim().replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
       return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
   }).trim();
+
+  if((! repeat) || (! params)) {
+    return HtmlService.createTemplateFromFile('manual').evaluate();
+  }
 
   const output = ContentService.createTextOutput();
   output.setMimeType(ContentService.MimeType.JSON);
