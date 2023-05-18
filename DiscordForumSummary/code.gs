@@ -23,7 +23,9 @@ function getForumId() {
 }
 
 function behaviorCheck() {
-  console.log(updateForumIds([1,2,3]));
+  const activeForums = getForum(getForumId());
+  const groupedForums = groupingForums(activeForums);
+  console.log(groupedForums);
 }
 
 function updateForumIds(idList = [], fileId = getFileId(), sheetId = 'DiscordForumSummary_forumIds') {
@@ -60,6 +62,22 @@ function handleForumIds(newIdList = [], fileId = getFileId(), sheetId = 'Discord
   }
 }
 
+function access() {
+  const url = 'https://hiyo-hitsu.sakura.ne.jp/ytsheets/ytsheet2_sw2.5/sw2.5/rolltail/browser.cgi';
+    try {
+      const response = UrlFetchApp.fetch(url, {
+        'method': 'get',
+        'headers': {
+          'User-Agent': 'hiyoko'
+        },
+        'muteHttpExceptions': true
+      });
+      console.log(response.getContentText());
+    } catch(e) {
+      return e;
+    }
+}
+
 function getForum(forumId) {
     const url = `${getBaseURL()}activeThreads.cgi`;
     try {
@@ -74,7 +92,12 @@ function getForum(forumId) {
       if(requestResult.error) {
         throw requestResult.error;
       }
-      return requestResult.threads.filter((t)=>{return t.parent_id === forumId;});
+      if(forumId) {
+        return requestResult.threads.filter((t)=>{return t.parent_id === forumId;});
+      } else {
+        return requestResult.threads;
+      }
+      
     } catch(e) {
       return e;
     }
@@ -137,6 +160,7 @@ function groupingForums(activeForums) {
       result.unknown.push(forum);
     }
   });
+  console.log(JSON.stringify(result));
   return result;
 };
 
@@ -185,9 +209,30 @@ function pickDateTimeFromTitle(input) {
 
 function getSessionParamRegExps() {
   return {
-    'ツール':   /使用ツール\s*[:：]\s*(.*)\n/,
-    '所要時間': /予定時間\s*[:：]\s*(.*)\n/,
-    '形式':  /セッション形式\s*[:：]\s*(.*)\n/,
+    'ツール': {
+      exec: (body)=>{
+        const regexp = /使用ツール\s*[:：]\s*(.*)\n/.exec(body);
+        if(regexp) {return regexp;}
+        const toolList = {
+          'ccfolia': 'ココフォリア',
+          'ココフォ': 'ココフォリア',
+          'ここふぉ': 'ココフォリア',
+          'udonarium': 'ユドナリウム',
+          'ユドナ': 'ユドナリウム',
+          'ゆどな': 'ユドナリウム',
+          'tekey': 'Tekey',
+          'ゆとチャ':'ゆとチャットAdv',
+          'むせる': 'どどんとふむせる'
+        }
+        const note = body.split('備考:').at(-1).replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
+          return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+        }).trim().toLowerCase();
+        for(var key in toolList) { if(note.includes(key)) {return [key,toolList[key]];} }
+        return false;
+      }
+    },
+    '所要時間': /[予所][定要]時間\s*[:：]\s*(.*)\n/,
+    '形式': /セッション形式\s*[:：]\s*(.*)\n/,
   };
 }
 
@@ -217,6 +262,7 @@ function buildWebhookParam(groupedForums) {
 function exec() {
   try {
     const activeForums = getForum(getForumId());
+    console.log(`${activeForums.length} threads are exists`);
     const groupedForums = groupingForums(activeForums);
     if(groupedForums.open.length) {
       const openIds = groupedForums.open.map((f)=>{return f.id});
