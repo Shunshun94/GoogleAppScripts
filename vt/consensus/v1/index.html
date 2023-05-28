@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
+    <script>
+      const scriptUrl = 'https://script.google.com/macros/s/AKfycbwMSlI3t-nvPg8iNrhlANskzP3OaiLODyzFIyNAweRD/dev';
+      const getGssId = (gssUrl) => {
+        const execResult = /https:\/\/docs\.google\.com\/spreadsheets\/d\/([0-9A-Za-z\-_]+)/.exec(gssUrl);
+        if(execResult) {
+          return execResult[1];
+        } else {
+          throw `${gssUrl} は Google Spreadsheet の URL ではありません。Google Spreadsheet の URL を入力してください`;
+        }
+      };
+      const getComparedFiles = (sheetA, sheetB) => {
+        return new Promise((resolve, reject)=>{
+          $.ajax({
+            type: 'get',
+            url: `${scriptUrl}`,
+            dataType: 'jsonp',
+            data: {
+              compare: `${sheetA},${sheetB}`
+            }
+          }).done((response)=>{
+            resolve(response);
+          })
+        });
+      };
+      const compareTwoFiles = (sheetA, sheetB) => {
+        const sheetIdA = getGssId(sheetA);
+        const sheetIdB = getGssId(sheetB);
+        getComparedFiles(sheetIdA, sheetIdB).then(console.log);
+      };
+    </script>
+  </head>
+  <body>
+    <script>
+      
+    </script>
+  </body>
+</html>

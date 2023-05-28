@@ -76,8 +76,8 @@ const getAgeVisual = (sheet, isNoteExist) => {
   return getMachingTable(sheet.getRange(25, 13, 11, 12).getValues(), isNoteExist);
 };
 
-const getSheet = (sheetUrl) => {
-  const sheet = SpreadsheetApp.openByUrl(sheetUrl).getSheetByName('基本コンセンサス');
+const getSheet = (sheetId) => {
+  const sheet = SpreadsheetApp.openById(sheetId).getSheetByName('基本コンセンサス');
   return {
     '名前': getName(sheet),
     '部位': getParts(sheet),
@@ -115,6 +115,25 @@ const compareTwoSheets = (offense, receive) => {
   return compareRObjectRecursive(offenseInfo, receiveInfo);
 };
 
-function doGet() {
-  
+const generateReturnValue = (params, body) => {
+  const output = ContentService.createTextOutput();
+  if(params.callback) {
+      output.setMimeType(ContentService.MimeType.JAVASCRIPT);
+      output.setContent(`${params.callback}(${JSON.stringify(body)})`);
+  } else {
+      output.setMimeType(ContentService.MimeType.JSON);
+      output.setContent(JSON.stringify(body));
+  }
+  return output;
+};
+
+function doGet(e) {
+  if(e.parameter.compare) {
+    const ids = e.parameter.compare.split(',');
+    return generateReturnValue(e.parameter, compareTwoSheets(ids[0], ids[1]));
+  } else if(e.parameter.sheet) {
+    return generateReturnValue(e.parameter, getSheet(e.parameter.sheet));
+  } else {
+    return HtmlService.createTemplateFromFile('index').evaluate();
+  }
 }
