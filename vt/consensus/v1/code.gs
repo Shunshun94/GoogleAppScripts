@@ -90,6 +90,31 @@ const getSheet = (sheetUrl) => {
   };
 };
 
+const compareRObjectRecursive = (a, b) => {
+  const result = {};
+  for(var key in a) {
+    if( typeof a[key] === 'object' ) {
+      if( b[key] ) {
+        result[key] = compareRObjectRecursive(a[key], b[key]);
+      } else {
+        result[key] = -1;
+      }
+    } else if( typeof a[key] === 'number' ) {
+      result[key] = Math.min(a[key], b[key]);
+    } else {
+      result[key] = `${a[key]} vs ${b[key]}`;
+    }
+  }
+  return result;
+};
+
+const compareTwoSheets = (offense, receive) => {
+  console.log(offense, receive);
+  const offenseInfo = getSheet(offense);
+  const receiveInfo = getSheet(receive, true);
+  return compareRObjectRecursive(offenseInfo, receiveInfo);
+};
+
 function doGet() {
   
 }
