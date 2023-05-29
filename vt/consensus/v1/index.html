@@ -15,6 +15,7 @@
           throw msg;
         }
       };
+
       const generateTd = (val) => {
         const vals = ['？', '✕', '△', '◯', '◎', '★'];
         const td  = document.createElement('td');
@@ -22,20 +23,28 @@
         td.className = `score_${val}`;
         return td;
       };
-      const drawSimpleTable = (data, names, category, index) => {
+
+      const createTable = (category, classPrefix, index) => {
         const table = document.createElement('table');
         table.setAttribute('border', '1');
-        table.className = `simpleTable_${index}`;
+        table.className = `${classPrefix}_${index}`;
 
         const title = document.createElement('caption');
         title.textContent = category;
+        table.append(title);
+
+        return table;
+      };
+
+      const drawSimpleTable = (data, names, category, index) => {
+        const table = createTable(category, 'simpleTable', index);
 
         const header = document.createElement('tr');
         header.append(document.createElement('th'));
         const aToR = document.createElement('th');
-        aToR.textContent = `${names[0]} → ${names[1]}`;
+        aToR.textContent = `${names[0][0]} → ${names[1][0]}`;
         const rToA = document.createElement('th');
-        rToA.textContent = `${names[1]} → ${names[0]}`;
+        rToA.textContent = `${names[1][0]} → ${names[0][0]}`;
         header.append(aToR);
         header.append(rToA);
 
@@ -53,7 +62,6 @@
         }
 
         if(lines.length) {
-          table.append(title);
           table.append(header);
           lines.forEach((element)=>{ table.append(element) });
           return table;
@@ -61,6 +69,34 @@
           return null;
         }
       };
+
+      const drawMatchingTable = (data, names, category, index) => {
+        const columns = Object.keys(data);
+        const table = createTable(category, 'matchingTable', index);
+
+        const header = document.createElement('tr');
+        header.append(document.createElement('th'));
+        columns.forEach((column, i)=>{
+          const th = document.createElement('th');
+          th.textContent = column[0];
+          header.append(th);
+        });
+        table.append(header);
+
+        columns.forEach((columnA)=>{
+          const line = document.createElement('tr');
+          const th = document.createElement('th');
+          th.textContent = columnA;
+          line.append(th);
+          columns.forEach((columnB)=>{
+            line.append(generateTd(data[columnA][columnB]));
+          });
+          table.append(line);
+        });
+
+        return table;
+      };
+
       const drawResult = (data) => {
         const base = document.getElementById('result');
         const name = document.createElement('h1');
@@ -72,10 +108,12 @@
           const elem = drawSimpleTable(data[category], names, category, i);
           if(elem) { base.append(elem); }
         });
-        ['性別・種族', '年齢・容姿'].forEach((category)=>{
-
+        ['性別・種族', '年齢・容姿'].forEach((category, i)=>{
+          const elem = drawMatchingTable(data[category], names, category, i);
+          if(elem) { base.append(elem); }
         });
       };
+
       const getComparedFiles = (sheetA, sheetB) => {
         return new Promise((resolve, reject)=>{
           $.ajax({
@@ -90,12 +128,32 @@
           })
         });
       };
+
       const compareTwoFiles = (sheetA, sheetB) => {
         const sheetIdA = getGssId(sheetA);
         const sheetIdB = getGssId(sheetB);
         getComparedFiles(sheetIdA, sheetIdB).then((result)=>{drawResult(result)});
       };
     </script>
+    <style>
+      #result {position:relative;}
+      .simpleTable_1 {
+        position:absolute;
+        top:70px;
+        left:170px;
+      }
+      .matchingTable_0 {
+        position:absolute;
+        top:70px;
+        left:340px;
+      }
+
+      .matchingTable_1 {
+        position:absolute;
+        top:450px;
+        left:340px;
+      }
+    </style>
   </head>
   <body>
     <p>
