@@ -10,8 +10,71 @@
         if(execResult) {
           return execResult[1];
         } else {
-          throw `${gssUrl} は Google Spreadsheet の URL ではありません。Google Spreadsheet の URL を入力してください`;
+          const msg = `${gssUrl} は Google Spreadsheet の URL ではありません。Google Spreadsheet の URL を入力してください`;
+          alert(msg);
+          throw msg;
         }
+      };
+      const generateTd = (val) => {
+        const vals = ['？', '✕', '△', '◯', '◎', '★'];
+        const td  = document.createElement('td');
+        td.textContent = vals[val];
+        td.className = `score_${val}`;
+        return td;
+      };
+      const drawSimpleTable = (data, names, category, index) => {
+        const table = document.createElement('table');
+        table.setAttribute('border', '1');
+        table.className = `simpleTable_${index}`;
+
+        const title = document.createElement('caption');
+        title.textContent = category;
+
+        const header = document.createElement('tr');
+        header.append(document.createElement('th'));
+        const aToR = document.createElement('th');
+        aToR.textContent = `${names[0]} → ${names[1]}`;
+        const rToA = document.createElement('th');
+        rToA.textContent = `${names[1]} → ${names[0]}`;
+        header.append(aToR);
+        header.append(rToA);
+
+        const lines = [];
+        for(var key in data) {
+          if( key ) {
+            const line = document.createElement('tr');
+            const th = document.createElement('th');
+            th.textContent = key;
+            line.append(th);
+            line.append(generateTd(data[key].own));
+            line.append(generateTd(data[key].partner));
+            lines.push(line);
+          }
+        }
+
+        if(lines.length) {
+          table.append(title);
+          table.append(header);
+          lines.forEach((element)=>{ table.append(element) });
+          return table;
+        } else {
+          return null;
+        }
+      };
+      const drawResult = (data) => {
+        const base = document.getElementById('result');
+        const name = document.createElement('h1');
+        name.textContent = data['名前'];
+        base.append(name);
+        const names = data['名前'].split('/').map((d)=>{return d.trim()});
+
+        ['部位', '行為', '未分類', 'シチュエーション', 'その他'].forEach((category, i)=>{
+          const elem = drawSimpleTable(data[category], names, category, i);
+          if(elem) { base.append(elem); }
+        });
+        ['性別・種族', '年齢・容姿'].forEach((category)=>{
+
+        });
       };
       const getComparedFiles = (sheetA, sheetB) => {
         return new Promise((resolve, reject)=>{
@@ -30,13 +93,20 @@
       const compareTwoFiles = (sheetA, sheetB) => {
         const sheetIdA = getGssId(sheetA);
         const sheetIdB = getGssId(sheetB);
-        getComparedFiles(sheetIdA, sheetIdB).then(console.log);
+        getComparedFiles(sheetIdA, sheetIdB).then((result)=>{drawResult(result)});
       };
     </script>
   </head>
   <body>
+    <p>
+      <span>自分のコンセンサスシートのURL: <input type="text" id="sheetA" datalist="sheets" /></span><br/>
+      <span>相手のコンセンサスシートのURL: <input type="text" id="sheetB" datalist="sheets" /></span><br/>
+      <button id="exec">照合開始！</button>
+    </p>
+    <hr/>
+    <div id="result"></div>
     <script>
-      
+
     </script>
   </body>
 </html>
