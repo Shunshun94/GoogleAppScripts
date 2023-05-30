@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
+    <script>
+      const scriptUrl = '<?= PropertiesService.getScriptProperties().getProperty('API_URL') ?>';
+
+      const getGssId = (gssUrl) => {
+        const execResult = /https:\/\/docs\.google\.com\/spreadsheets\/d\/([0-9A-Za-z\-_]+)/.exec(gssUrl);
+        if(execResult) {
+          return execResult[1];
+        } else {
+          const msg = `${gssUrl} は Google Spreadsheet の URL ではありません。Google Spreadsheet の URL を入力してください`;
+          alert(msg);
+          throw msg;
+        }
+      };
+
+      const generateTd = (val) => {
+        const vals = ['？', '✕', '△', '◯', '◎', '★'];
+        const td  = document.createElement('td');
+        td.textContent = vals[val];
+        td.className = `score_${val}`;
+        return td;
+      };
+
+      const createTable = (category, classPrefix, index) => {
+        const table = document.createElement('table');
+        table.setAttribute('border', '1');
+        table.className = `${classPrefix}_${index}`;
+
+        const title = document.createElement('caption');
+        title.textContent = category;
+        table.append(title);
+
+        return table;
+      };
+
+      const drawSimpleTable = (data, names, category, index) => {
+        const table = createTable(category, 'simpleTable', index);
+
+        const header = document.createElement('tr');
+        header.append(document.createElement('th'));
+        const aToR = document.createElement('th');
+        aToR.textContent = `${names[0][0]} → ${names[1][0]}`;
+        const rToA = document.createElement('th');
+        rToA.textContent = `${names[1][0]} → ${names[0][0]}`;
+        header.append(aToR);
+        header.append(rToA);
+
+        const lines = [];
+        for(var key in data) {
+          if( key ) {
+            const line = document.createElement('tr');
+            const th = document.createElement('th');
+            th.textContent = key;
+            line.append(th);
+            line.append(generateTd(data[key].own));
+            line.append(generateTd(data[key].partner));
+            lines.push(line);
+          }
+        }
+
+        if(lines.length) {
+          table.append(header);
+          lines.forEach((element)=>{ table.append(element) });
+          return table;
+        } else {
+          return null;
+        }
+      };
+
+      const drawMatchingTable = (data, names, category, index) => {
+        const columns = Object.keys(data);
+        const table = createTable(category, 'matchingTable', index);
+
+        const header = document.createElement('tr');
+        header.append(document.createElement('th'));
+        columns.forEach((column, i)=>{
+          const th = document.createElement('th');
+          th.textContent = column[0];
+          header.append(th);
+        });
+        table.append(header);
+
+        columns.forEach((columnA)=>{
+          const line = document.createElement('tr');
+          const th = document.createElement('th');
+          th.textContent = columnA;
+          line.append(th);
+          columns.forEach((columnB)=>{
+            line.append(generateTd(data[columnA][columnB]));
+          });
+          table.append(line);
+        });
+
+        return table;
+      };
+
+      const drawResult = (data) => {
+        const base = document.getElementById('result');
+        base.innerHTML = '';
+        const name = document.createElement('h1');
+        name.textContent = data['名前'];
+        base.append(name);
+        const names = data['名前'].split('/').map((d)=>{return d.trim()});
+
+        ['部位', '行為', '未分類', 'シチュエーション', 'その他'].forEach((category, i)=>{
+          const elem = drawSimpleTable(data[category], names, category, i);
+          if(elem) { base.append(elem); }
+        });
+        ['性別・種族', '年齢・容姿'].forEach((category, i)=>{
+          const elem = drawMatchingTable(data[category], names, category, i);
+          if(elem) { base.append(elem); }
+        });
+      };
+
+      const getComparedFiles = (sheetA, sheetB) => {
+        return new Promise((resolve, reject)=>{
+          $.ajax({
+            type: 'get',
+            url: `${scriptUrl}`,
+            dataType: 'jsonp',
+            data: {
+              compare: `${sheetA},${sheetB}`
+            }
+          }).done((response)=>{
+            resolve(response);
+          })
+        });
+      };
+
+      const compareTwoFiles = (sheetA, sheetB) => {
+        const sheetIdA = getGssId(sheetA);
+        const sheetIdB = getGssId(sheetB);
+        getComparedFiles(sheetIdA, sheetIdB).then((result)=>{drawResult(result);});
+      };
+    </script>
+    <style>
+      * {
+	      box-sizing:border-box;
+	      font-family: "BIZ UDゴシック","UD Shin Go NT Light JIS2004","UD デジタル 教科書体 N-R", Verdana, Roboto, "Droid Sans", "游ゴシック", YuGothic, "メイリオ", Meiryo, "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "ＭＳ Ｐゴシック", sans-serif;
+      }
+
+      .score_0 { background-color:lightgray; }
+      .score_1 { background-color:coral; }
+      .score_2 { background-color:lemonchiffon; }
+      .score_3 { background-color:white; }
+      .score_4 { background-color:aquamarine; }
+      .score_5 { background-color:dodgerblue; }
+
+      #result {position:relative;}
+      .simpleTable_1 {
+        position:absolute;
+        top:54px;
+        left:186px;
+      }
+
+      .matchingTable_0 {
+        position:absolute;
+        top:54px;
+        left:372px;
+      }
+
+      .matchingTable_1 {
+        position:absolute;
+        top:350px;
+        left:372px;
+      }
+
+      .simpleTable_2 {
+        position:absolute;
+        top:54px;
+        left:672px;
+      }
+
+      .simpleTable_3 {
+        position:absolute;
+        top:54px;
+        left:972px;
+      }
+
+      .simpleTable_4 {
+        position:absolute;
+        top:54px;
+        left:1190px;
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      <span>自分のコンセンサスシートのURL: <input type="text" id="sheetA" datalist="sheets" /></span><br/>
+      <span>相手のコンセンサスシートのURL: <input type="text" id="sheetB" datalist="sheets" /></span><br/>
+      <button id="exec">照合開始！</button>　<button id="swap">上下交換</button>
+    </p>
+    <datalist id="sheets"></datalist>
+    <hr/>
+    <div id="result"></div>
+    <script>
+      document.getElementById('exec').onclick = (e) => {
+        const sheetA = document.getElementById('sheetA').value;
+        const sheetB = document.getElementById('sheetB').value;
+        compareTwoFiles(sheetA, sheetB);
+      };
+      document.getElementById('swap').onclick = (e) => {
+        const tmp = document.getElementById('sheetA').value;
+        document.getElementById('sheetA').value = document.getElementById('sheetB').value;
+        document.getElementById('sheetB').value = tmp;
+      };
+    </script>
+  </body>
+</html>
