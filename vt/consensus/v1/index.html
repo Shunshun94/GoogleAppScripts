@@ -4,7 +4,8 @@
     <base target="_top">
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.3/dist/jquery.min.js"></script>
     <script>
-      const scriptUrl = 'https://script.google.com/macros/s/AKfycbwMSlI3t-nvPg8iNrhlANskzP3OaiLODyzFIyNAweRD/dev';
+      const scriptUrl = '<?= PropertiesService.getScriptProperties().getProperty('API_URL') ?>';
+
       const getGssId = (gssUrl) => {
         const execResult = /https:\/\/docs\.google\.com\/spreadsheets\/d\/([0-9A-Za-z\-_]+)/.exec(gssUrl);
         if(execResult) {
@@ -99,6 +100,7 @@
 
       const drawResult = (data) => {
         const base = document.getElementById('result');
+        base.innerHTML = '';
         const name = document.createElement('h1');
         name.textContent = data['名前'];
         base.append(name);
@@ -132,26 +134,57 @@
       const compareTwoFiles = (sheetA, sheetB) => {
         const sheetIdA = getGssId(sheetA);
         const sheetIdB = getGssId(sheetB);
-        getComparedFiles(sheetIdA, sheetIdB).then((result)=>{drawResult(result)});
+        getComparedFiles(sheetIdA, sheetIdB).then((result)=>{drawResult(result);});
       };
     </script>
     <style>
+      * {
+	      box-sizing:border-box;
+	      font-family: "BIZ UDゴシック","UD Shin Go NT Light JIS2004","UD デジタル 教科書体 N-R", Verdana, Roboto, "Droid Sans", "游ゴシック", YuGothic, "メイリオ", Meiryo, "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "ＭＳ Ｐゴシック", sans-serif;
+      }
+
+      .score_0 { background-color:lightgray; }
+      .score_1 { background-color:coral; }
+      .score_2 { background-color:lemonchiffon; }
+      .score_3 { background-color:white; }
+      .score_4 { background-color:aquamarine; }
+      .score_5 { background-color:dodgerblue; }
+
       #result {position:relative;}
       .simpleTable_1 {
         position:absolute;
-        top:70px;
-        left:170px;
+        top:54px;
+        left:186px;
       }
+
       .matchingTable_0 {
         position:absolute;
-        top:70px;
-        left:340px;
+        top:54px;
+        left:372px;
       }
 
       .matchingTable_1 {
         position:absolute;
-        top:450px;
-        left:340px;
+        top:350px;
+        left:372px;
+      }
+
+      .simpleTable_2 {
+        position:absolute;
+        top:54px;
+        left:672px;
+      }
+
+      .simpleTable_3 {
+        position:absolute;
+        top:54px;
+        left:972px;
+      }
+
+      .simpleTable_4 {
+        position:absolute;
+        top:54px;
+        left:1190px;
       }
     </style>
   </head>
@@ -159,12 +192,22 @@
     <p>
       <span>自分のコンセンサスシートのURL: <input type="text" id="sheetA" datalist="sheets" /></span><br/>
       <span>相手のコンセンサスシートのURL: <input type="text" id="sheetB" datalist="sheets" /></span><br/>
-      <button id="exec">照合開始！</button>
+      <button id="exec">照合開始！</button>　<button id="swap">上下交換</button>
     </p>
+    <datalist id="sheets"></datalist>
     <hr/>
     <div id="result"></div>
     <script>
-
+      document.getElementById('exec').onclick = (e) => {
+        const sheetA = document.getElementById('sheetA').value;
+        const sheetB = document.getElementById('sheetB').value;
+        compareTwoFiles(sheetA, sheetB);
+      };
+      document.getElementById('swap').onclick = (e) => {
+        const tmp = document.getElementById('sheetA').value;
+        document.getElementById('sheetA').value = document.getElementById('sheetB').value;
+        document.getElementById('sheetB').value = tmp;
+      };
     </script>
   </body>
 </html>
