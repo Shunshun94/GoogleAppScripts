@@ -164,49 +164,6 @@ function groupingForums(activeForums) {
   return result;
 };
 
-function pickDateTimeFromTitle(input) {
-    const text = input.replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
-        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
-    }).trim();
-    const dateRegexpResult = /([01]?[0-9])\s*[\/／月\-・]\s*([0-3]?[0-9])\s*日?\s*[日月火水木金土\s\　]*/.exec(text);
-    const textRemovedDate = (dateRegexpResult ? text.replace(dateRegexpResult[0], '') : text).trim();
-
-    const timeRegexpResult = /([012]?[0-9])\s*[\:：時]\s*([0-5][0-9])?\s*[分～~]*/.exec(textRemovedDate);
-    const textRemovedTime = (timeRegexpResult ? textRemovedDate.replace(timeRegexpResult[0], '') : textRemovedDate).trim();
-
-    if(timeRegexpResult && dateRegexpResult) {
-        if(timeRegexpResult[2]) {
-            return {
-                dateRegExp: dateRegexpResult,
-                timeRegExp: timeRegexpResult,
-                text: `${dateRegexpResult[1].padStart(2, 0)}/${dateRegexpResult[2].padStart(2, 0)} ${timeRegexpResult[1].padStart(2, 0)}:${timeRegexpResult[2].padStart(2, 0)}`,
-                datetimeRevmoed: textRemovedTime
-            };
-        } else {
-            return {
-                dateRegExp: dateRegexpResult,
-                timeRegExp: timeRegexpResult,
-                text: `${dateRegexpResult[1].padStart(2, 0)}/${dateRegexpResult[2].padStart(2, 0)} ${timeRegexpResult[1].padStart(2, 0)}:00`,
-                datetimeRevmoed: textRemovedTime
-            };
-        }
-    }
-    if(dateRegexpResult) {
-        return {
-            dateRegExp: dateRegexpResult,
-            timeRegExp: timeRegexpResult,
-            text: `${dateRegexpResult[1].padStart(2, 0)}/${dateRegexpResult[2].padStart(2, 0)}`,
-            datetimeRevmoed: textRemovedTime
-        };
-    }
-    return {
-        dateRegExp: dateRegexpResult,
-        timeRegExp: timeRegexpResult,
-        text: '',
-        datetimeRevmoed: textRemovedTime
-    };
-}
-
 function getSessionParamRegExps() {
   return {
     'ツール': {
@@ -236,13 +193,13 @@ function getSessionParamRegExps() {
   };
 }
 
-function buildWebhookParam(groupedForums) {
+function buildWebhookParam(groupedForums, opt_targetgroup='open') {
     return {
       username: '卓募集状況',
       avatar_url: getIconUrl(),
-      content: '現在募集中の卓は以下のとおりです\n' + groupedForums.open.map((f)=>{
+      content: '# 現在募集中の卓\n' + groupedForums[opt_targetgroup].map((f)=>{
           const rawTitle = f.name;
-          const parsedTitle = pickDateTimeFromTitle(rawTitle.replace(/【.+】/, ''));
+          const parsedTitle = io.github.shunshun94.util.DateTimePicker.pick(rawTitle.replace(/【.+】/, ''));
           const title = ['日時未定', '日時すり合わせ', '日程未定', '日程すり合わせ', '日付すり合わせ', '日付未定'].reduce((current, target)=>{return current.replace(target, '')}, parsedTitle.datetimeRevmoed).trim();
           const datetime = parsedTitle.text || '日時未定';
 
@@ -254,7 +211,7 @@ function buildWebhookParam(groupedForums) {
             if(execResult) { params.push(`${column}: ${execResult[1]}`); }
           }
 
-          return `**${title}** (開催日時：${datetime})\nhttps://discord.com/channels/${getGuildId()}/${f.id}\n　${params.join('\n　')}`;
+          return `## ${title} (開催日時：${datetime})\nhttps://discord.com/channels/${getGuildId()}/${f.id}\n　${params.join('\n　')}`;
         }).join('\n\n')
     };
 }
