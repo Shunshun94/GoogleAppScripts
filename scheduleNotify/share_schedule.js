@@ -32,6 +32,10 @@ function getSchedulesFromTimeTreeCalendars(days = 7) {
   }).flat();
 }
 
+function getTimeFromDate(date, timezone = 'ja-JP') {
+  return date.toLocaleTimeString(timezone).match(/\d?\d:\d\d/)[0];
+}
+
 function getSchedulesFromGoogleCalendarsCalendars(days = 7) {
   const calendarIds = PropertiesService.getScriptProperties().getProperty('GOOGLE_CALENDAR_IDs');
   if(calendarIds) {
@@ -46,8 +50,8 @@ function getSchedulesFromGoogleCalendarsCalendars(days = 7) {
           isAllDay: schedule.isAllDayEvent(),
           title: schedule.getTitle(),
           date: schedule.getStartTime().toLocaleDateString('ja-JP'),
-          start: schedule.getStartTime().toLocaleTimeString('ja-JP').slice(0,5),
-          end: schedule.getEndTime().toLocaleTimeString('ja-JP').slice(0,5)
+          start: getTimeFromDate(schedule.getStartTime()),
+          end: getTimeFromDate(schedule.getEndTime())
         };
       });
     }).flat();
@@ -79,9 +83,9 @@ function modifySchedulesEasyToHandle(schedules) {
       isAllDay: attr.all_day,
       title: attr.title,
       date: start.toLocaleDateString('ja-JP'),
-      start: start.toLocaleTimeString('ja-JP').slice(0,5),
-      end: end.toLocaleTimeString('ja-JP').slice(0,5)
-    }
+      start: getTimeFromDate(start),
+      end: getTimeFromDate(end)
+    };
   }).forEach((s)=>{
     if(s.date !== cursorDay) {
       cursorDay = s.date;
@@ -154,7 +158,7 @@ function sendScheduleInfo(schedules) {
 }
 
 function behavior() {
-  console.log(getSchedules());
+  console.log(generateSemiMarkdownFormattedSchedule(getSchedules()));
 }
 
 function execute() {
