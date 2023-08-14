@@ -216,15 +216,19 @@ function buildWebhookParam(groupedForums, opt_targetgroup='open') {
     };
 }
 
-function exec() {
+function hasNewForum(groupedForums) {
+  const openIds = groupedForums.open.map((f)=>{return f.id});
+  const handleResult = handleForumIds(openIds);
+  return handleResult.hasNewForum;
+}
+
+function exec(shouldPost = hasNewForum) {
   try {
     const activeForums = getForum(getForumId());
     console.log(`${activeForums.length} threads are exists`);
     const groupedForums = groupingForums(activeForums);
     if(groupedForums.open.length) {
-      const openIds = groupedForums.open.map((f)=>{return f.id});
-      const handleResult = handleForumIds(openIds);
-      if(handleResult.hasNewForum) {
+      if(shouldPost(groupedForums)) {
         const requestBody = buildWebhookParam(groupedForums);
         postWebhook(requestBody);
       }
