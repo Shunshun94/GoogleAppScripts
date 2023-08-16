@@ -51,13 +51,29 @@ function handleForumIds(newIdList = [], fileId = getFileId(), sheetId = 'Discord
   const hasNewForum = newIdList.some((d)=>{ return ! pastList.includes(d); });
   if(hasNewForum) {
     return {
-      hasNewForum: true,
-      forumList:   updateForumIds(newIdList, fileId, sheetId)
+      isUpdated: true,
+      forumList: updateForumIds(newIdList, fileId, sheetId)
     };
   } else {
     return {
-      hasNewForum: false,
-      forumList:   pastList
+      isUpdated: false,
+      forumList: pastList
+    };
+  }
+}
+
+function handleForumIds2(newIdList = [], fileId = getFileId(), sheetId = 'DiscordForumSummary_forumIds') {
+  const pastList = getPastForumIds();
+  const isUpdated = newIdList.sort().join() !== pastList.sort().join();
+  if(isUpdated) {
+    return {
+      isUpdated: true,
+      forumList: updateForumIds(newIdList, fileId, sheetId)
+    };
+  } else {
+    return {
+      isUpdated: false,
+      forumList: pastList
     };
   }
 }
@@ -193,36 +209,55 @@ function getSessionParamRegExps() {
   };
 }
 
-function buildWebhookParam(groupedForums, opt_targetgroup='open') {
+function buildWebhookParam(groupedForums) {
+  if(groupedForums.open.length === 0) {
     return {
       username: '卓募集状況',
       avatar_url: getIconUrl(),
-      content: '# 現在募集中の卓\n' + groupedForums[opt_targetgroup].map((f)=>{
-          const rawTitle = f.name;
-          const parsedTitle = io.github.shunshun94.util.DateTimePicker.pick(rawTitle.replace(/【.+】/, ''));
-          const title = ['日時未定', '日時すり合わせ', '日程未定', '日程すり合わせ', '日付すり合わせ', '日付未定'].reduce((current, target)=>{return current.replace(target, '')}, parsedTitle.datetimeRevmoed).trim();
-          const datetime = parsedTitle.text || '日時未定';
-
-          const headPost = getForumFirstPost(f.id);
-          const regexps = getSessionParamRegExps();
-          const params = [];
-          for(var column in regexps) {
-            const execResult = regexps[column].exec(headPost.content);
-            if(execResult) { params.push(`${column}: ${execResult[1]}`); }
-          }
-
-          return `## ${title} (開催日時：${datetime})\nhttps://discord.com/channels/${getGuildId()}/${f.id}\n　${params.join('\n　')}`;
-        }).join('\n\n')
+      content: '現在募集中の卓はありません'
     };
+  }
+  return {
+    username: '卓募集状況',
+    avatar_url: getIconUrl(),
+    content: '# 現在募集中の卓\n' + groupedForums.open.map((f)=>{
+        const rawTitle = f.name;
+        const parsedTitle = io.github.shunshun94.util.DateTimePicker.pick(rawTitle.replace(/【.+】/, ''));
+        const title = ['日時未定', '日時すり合わせ', '日程未定', '日程すり合わせ', '日付すり合わせ', '日付未定'].reduce((current, target)=>{return current.replace(target, '')}, parsedTitle.datetimeRevmoed).trim();
+        const datetime = parsedTitle.text || '日時未定';
+
+        const headPost = getForumFirstPost(f.id);
+        const regexps = getSessionParamRegExps();
+        const params = [];
+        for(var column in regexps) {
+          const execResult = regexps[column].exec(headPost.content);
+          if(execResult) { params.push(`${column}: ${execResult[1]}`); }
+        }
+
+        return `## ${title} (開催日時：${datetime})\nhttps://discord.com/channels/${getGuildId()}/${f.id}\n　${params.join('\n　')}`;
+      }).join('\n\n')
+  };
 }
 
-function hasNewForum(groupedForums) {
+function updatePost() {
+  exec(hasOpenForum);
+}
+
+function isUpdated(groupedForums) {
   const openIds = groupedForums.open.map((f)=>{return f.id});
   const handleResult = handleForumIds(openIds);
-  return handleResult.hasNewForum;
+  return handleResult.isUpdated;
 }
 
-function exec(shouldPost = hasNewForum) {
+function dailyPost() {
+  exec(hasOpenForum);
+}
+
+function hasOpenForum(groupedForums) {
+  return groupedForums.open.length;
+}
+
+function exec(shouldPost = isUpdated) {
   try {
     const activeForums = getForum(getForumId());
     console.log(`${activeForums.length} threads are exists`);
