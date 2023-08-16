@@ -240,7 +240,7 @@ function buildWebhookParam(groupedForums) {
 }
 
 function updatePost() {
-  exec(hasOpenForum);
+  exec(hasOpenForum, console.log);
 }
 
 function isUpdated(groupedForums) {
@@ -250,14 +250,14 @@ function isUpdated(groupedForums) {
 }
 
 function dailyPost() {
-  exec(hasOpenForum);
+  exec(hasOpenForum, console.log);
 }
 
 function hasOpenForum(groupedForums) {
   return groupedForums.open.length;
 }
 
-function exec(shouldPost = isUpdated) {
+function exec(shouldPost = isUpdated, post = postWebhook) {
   try {
     const activeForums = getForum(getForumId());
     console.log(`${activeForums.length} threads are exists`);
@@ -265,7 +265,7 @@ function exec(shouldPost = isUpdated) {
     if(groupedForums.open.length) {
       if(shouldPost(groupedForums)) {
         const requestBody = buildWebhookParam(groupedForums);
-        postWebhook(requestBody);
+        post(requestBody);
       }
     }
   } catch (e) {
