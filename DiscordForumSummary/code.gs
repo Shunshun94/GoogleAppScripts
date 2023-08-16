@@ -239,26 +239,38 @@ function buildWebhookParam(groupedForums) {
   };
 }
 
-function updatePost() {
-  exec(hasOpenForum, console.log);
-}
-
 function isUpdated(groupedForums) {
   const openIds = groupedForums.open.map((f)=>{return f.id});
-  const handleResult = handleForumIds(openIds);
+  const handleResult = handleForumIds2(openIds);
   return handleResult.isUpdated;
 }
 
-function dailyPost() {
-  exec(hasOpenForum, console.log);
+function hasNew(groupedForums) {
+  const openIds = groupedForums.open.map((f)=>{return f.id});
+  const handleResult = handleForumIds(openIds);
+  return handleResult.isUpdated;
 }
 
 function hasOpenForum(groupedForums) {
   return groupedForums.open.length;
 }
 
-function exec(shouldPost = isUpdated, post = postWebhook) {
+function updatePost() {
+  exec({
+    shouldPost: isUpdated
+  });
+}
+
+function dailyPost() {
+  exec({
+    shouldPost: hasOpenForum
+  });
+}
+
+function exec(functions) {
   try {
+    const shouldPost = functions.shouldPost || hasNew;
+    const post = functions.post || postWebhook;
     const activeForums = getForum(getForumId());
     console.log(`${activeForums.length} threads are exists`);
     const groupedForums = groupingForums(activeForums);
