@@ -46,7 +46,7 @@ function getPastForumIds(fileId = getFileId(), sheetId = 'DiscordForumSummary_fo
   return SpreadsheetApp.openById(fileId).getSheetByName(sheetId).getDataRange().getValues().flat();
 }
 
-function handleForumIds(newIdList = [], fileId = getFileId(), sheetId = 'DiscordForumSummary_forumIds') {
+function handleNewForumIds(newIdList = [], fileId = getFileId(), sheetId = 'DiscordForumSummary_forumIds') {
   const pastList = getPastForumIds();
   const hasNewForum = newIdList.some((d)=>{ return ! pastList.includes(d); });
   if(hasNewForum) {
@@ -62,7 +62,7 @@ function handleForumIds(newIdList = [], fileId = getFileId(), sheetId = 'Discord
   }
 }
 
-function handleForumIds2(newIdList = [], fileId = getFileId(), sheetId = 'DiscordForumSummary_forumIds') {
+function handleUpdatedForumIds(newIdList = [], fileId = getFileId(), sheetId = 'DiscordForumSummary_forumIds') {
   const pastList = getPastForumIds();
   const isUpdated = newIdList.sort().join() !== pastList.sort().join();
   if(isUpdated) {
@@ -241,13 +241,13 @@ function buildWebhookParam(groupedForums) {
 
 function isUpdated(groupedForums) {
   const openIds = groupedForums.open.map((f)=>{return f.id});
-  const handleResult = handleForumIds2(openIds);
+  const handleResult = handleUpdatedForumIds(openIds);
   return handleResult.isUpdated;
 }
 
 function hasNew(groupedForums) {
   const openIds = groupedForums.open.map((f)=>{return f.id});
-  const handleResult = handleForumIds(openIds);
+  const handleResult = handleNewForumIds(openIds);
   return handleResult.isUpdated;
 }
 
