@@ -36,10 +36,10 @@ function updateForumIds(idList = [], fileId = getFileId(), sheetId = 'DiscordFor
     sheet.insertRows( listLength - sheetHeight );
   }
   sheet.clear();
-  const contents = idList.map((id)=>{return [id]});
-
-  sheet.getRange(1, 1, listLength).setValues(contents);
-  return getPastForumIds(fileId, sheetId);
+  if(listLength.length) {
+    const contents = idList.map((id)=>{return [id]});
+    sheet.getRange(1, 1, listLength).setValues(contents);
+  }
 }
 
 function getPastForumIds(fileId = getFileId(), sheetId = 'DiscordForumSummary_forumIds') {
