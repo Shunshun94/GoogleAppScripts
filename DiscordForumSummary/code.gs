@@ -274,11 +274,9 @@ function exec(functions) {
     const activeForums = getForum(getForumId());
     console.log(`${activeForums.length} threads are exists`);
     const groupedForums = groupingForums(activeForums);
-    if(groupedForums.open.length) {
-      if(shouldPost(groupedForums)) {
-        const requestBody = buildWebhookParam(groupedForums);
-        post(requestBody);
-      }
+    if(shouldPost(groupedForums)) {
+      const requestBody = buildWebhookParam(groupedForums);
+      post(requestBody);
     }
   } catch (e) {
     console.error(e);
