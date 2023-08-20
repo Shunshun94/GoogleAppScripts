@@ -36,8 +36,8 @@ function updateForumIds(idList = [], fileId = getFileId(), sheetId = 'DiscordFor
     sheet.insertRows( listLength - sheetHeight );
   }
   sheet.clear();
-  if(listLength.length) {
-    const contents = idList.map((id)=>{return [id]});
+  const contents = idList.map((id)=>{return [id]});
+  if(contents.length) {
     sheet.getRange(1, 1, listLength).setValues(contents);
   }
 }
