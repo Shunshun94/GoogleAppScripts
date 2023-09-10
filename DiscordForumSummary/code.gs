@@ -166,11 +166,11 @@ function groupingForums(activeForums) {
   const FORUM_NAME_PREFIX_REGEXP = /【(.+)】/;
   activeForums.forEach((forum)=>{
     const prefix = FORUM_NAME_PREFIX_REGEXP.test(forum.name) ? FORUM_NAME_PREFIX_REGEXP.exec(forum.name)[1] : forum.name;
-    if(       ['終了', '流卓', 'END'].some((word)=>{ return forum.name.includes(word);})) {
+    if(       ['終了', '流卓', 'END'].some((word)=>{ return prefix.includes(word);})) {
       result.finished.push(forum);
-    } else if(['〆', '締'].some((word)=>{ return forum.name.includes(word);})) {
+    } else if(['〆', '締'].some((word)=>{ return prefix.includes(word);})) {
       result.closed.push(forum);
-    } else if(['募集', '立卓', '@'].some((word)=>{ return forum.name.includes(word);})) {
+    } else if(['募集', '立卓', '@'].some((word)=>{ return prefix.includes(word);})) {
       result.open.push(forum);
     } else {
       result.unknown.push(forum);
