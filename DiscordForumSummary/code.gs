@@ -40,6 +40,8 @@ function updateForumIds(idList = [], fileId = getFileId(), sheetId = 'DiscordFor
   if(contents.length) {
     sheet.getRange(1, 1, listLength).setValues(contents);
   }
+
+  return getPastForumIds(fileId, sheetId);
 }
 
 function getPastForumIds(fileId = getFileId(), sheetId = 'DiscordForumSummary_forumIds') {
@@ -222,8 +224,9 @@ function buildWebhookParam(groupedForums) {
     avatar_url: getIconUrl(),
     content: '# 現在募集中の卓\n' + groupedForums.open.map((f)=>{
         const rawTitle = f.name;
-        const parsedTitle = io.github.shunshun94.util.DateTimePicker.pick(rawTitle.replace(/【.+】/, ''));
-        const title = ['日時未定', '日時すり合わせ', '日程未定', '日程すり合わせ', '日付すり合わせ', '日付未定'].reduce((current, target)=>{return current.replace(target, '')}, parsedTitle.datetimeRevmoed).trim();
+        const parsedTitle = io.github.shunshun94.util.DateTimePicker.parse(rawTitle.replace(/【.+】/, ''));
+
+        const title =    parsedTitle.datetimeRevmoed;
         const datetime = parsedTitle.text || '日時未定';
 
         const headPost = getForumFirstPost(f.id);
