@@ -237,8 +237,13 @@ function buildWebhookParam(groupedForums) {
           if(execResult) { params.push(`${column}: ${execResult[1]}`); }
         }
 
-        return `## ${title} (開催日時：${datetime})\nhttps://discord.com/channels/${getGuildId()}/${f.id}\n　${params.join('\n　')}`;
-      }).join('\n\n')
+        return {
+          text: `## ${title} (開催日時：${datetime})\nhttps://discord.com/channels/${getGuildId()}/${f.id}\n　${params.join('\n　')}`,
+          date: datetime
+        };
+      }).sort((a, b)=>{
+        return ( a.date < b.date ) ? -1 : 1;
+      }).map((d)=>{return d.text;}).join('\n\n')
   };
 }
 
