@@ -243,7 +243,7 @@ function buildWebhookParam(groupedForums) {
         };
       }).sort((a, b)=>{
         return ( a.date < b.date ) ? -1 : 1;
-      }).map((d)=>{return d.text;}).join('\n\n')
+      }).map((d)=>{return d.text;}).join('\n')
   };
 }
 
