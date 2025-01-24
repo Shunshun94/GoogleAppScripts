@@ -54,6 +54,7 @@ function updateSheet() {
       json.sheetDescriptionS,
       json.updateTime,
       json.sheetURL,
+      `https://shunshun94.github.io/shared/other/io/github/shunshun94/trpg/sw2/ytsheet/sessionCount/sameSessionCount.html?target=${encodeURIComponent(json.sheetURL)}`,
       `https://shunshun94.github.io/shared/other/io/github/shunshun94/trpg/sw2/ytsheet/validation/index.html?target=${encodeURIComponent(json.sheetURL)}`,
       json.lvSco || 0,
       json.lvSag || 0,
