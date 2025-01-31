@@ -1,9 +1,10 @@
 const SHEET_IDS_TOP_POS = 4;
 const CONFIG_SHEET_NAME = 'config';
 const OUTPUT_SHEET_NAME = 'output';
+const PLINFO_SHEET_NAME = 'PLinfo';
 
 function getUrl(url) {
-  Utilities.sleep(3000);
+  Utilities.sleep(1000);
   return UrlFetchApp.fetch(url).getContentText();
 }
 
@@ -26,19 +27,45 @@ function getSheetRawLinks() {
   return ids;
 }
 
-function writeToSheet(array) {
-  if(array.length === 0) { return; }
-  const sheet = SpreadsheetApp.getActive().getSheetByName(OUTPUT_SHEET_NAME);
+function writeToSheet(characterList, sheetName) {
+  if(characterList.length === 0) { return; }
+  const sheet = SpreadsheetApp.getActive().getSheetByName(sheetName);
   const maxRow = sheet.getMaxRows();
   const emptyArray = Array(maxRow);
-  emptyArray.fill(Array(array[0].length));
-  sheet.getRange(2, 1, sheet.getMaxRows(), array[0].length).setValues(emptyArray);
+  emptyArray.fill(Array(characterList[0].length));
+  sheet.getRange(2, 1, sheet.getMaxRows(), characterList[0].length).setValues(emptyArray);
 
-  return sheet.getRange(2, 1, array.length, array[0].length).setValues(array);
+  return sheet.getRange(2, 1, characterList.length, characterList[0].length).setValues(characterList);
 }
 
 function updateLastUpdate() {
-  SpreadsheetApp.getActive().getSheets()[3].setName(`最終更新：${(new Date()).toLocaleString('jp-JP', { timeZone: 'JST' })}`);
+  SpreadsheetApp.getActive().getSheets()[4].setName(`最終更新：${(new Date()).toLocaleString('jp-JP', { timeZone: 'JST' })}`);
+}
+
+function generatePlReport(list) {
+  const resultMap = {};
+  const resultSeed = [];
+  list.forEach((character)=>{
+    if(! resultMap[character[0]]) {
+      resultMap[character[0]] = { count:0, sheets:[] };
+      resultSeed.push(character[0]);
+    }
+    resultMap[character[0]].count += Number(character[2]);
+    resultMap[character[0]].sheets.push(`${character[1]}\n${character[6]}`);
+  });
+  let maxColumnCount = 0;
+  return resultSeed.map((pl)=>{
+    const result = [pl, resultMap[pl].count, resultMap[pl].sheets].flat();
+    if(result.length > maxColumnCount) { maxColumnCount = result.length; }
+    return result;
+  }).map((d)=>{
+    if(d.length < maxColumnCount) {
+      for(var i = d.length; i < maxColumnCount; i++) {
+        d.push('');
+      }
+    }
+    return d;
+  }).sort((a, b)=>{ return b[1] - a[1]; });
 }
 
 function updateSheet() {
@@ -61,7 +88,9 @@ function updateSheet() {
       json.lvRan || 0
     ];
   });
-  const targetRange = writeToSheet(resultArray);
+  const plReport = generatePlReport(resultArray);
+  const pcListRange = writeToSheet(resultArray, OUTPUT_SHEET_NAME);
+  const plListRange = writeToSheet(plReport, PLINFO_SHEET_NAME);
   updateLastUpdate();
-  return targetRange.getValues();
+  return pcListRange.getValues();
 }
