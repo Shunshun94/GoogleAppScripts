@@ -4,7 +4,7 @@ const OUTPUT_SHEET_NAME = 'output';
 const PLINFO_SHEET_NAME = 'PLinfo';
 
 function getUrl(url) {
-  Utilities.sleep(1000);
+  Utilities.sleep(3000);
   return UrlFetchApp.fetch(url).getContentText();
 }
 
@@ -39,7 +39,8 @@ function writeToSheet(characterList, sheetName) {
 }
 
 function updateLastUpdate() {
-  SpreadsheetApp.getActive().getSheets()[4].setName(`最終更新：${(new Date()).toLocaleString('jp-JP', { timeZone: 'JST' })}`);
+  const count = SpreadsheetApp.getActive().getSheets().length;
+  SpreadsheetApp.getActive().getSheets()[count - 1].setName(`最終更新：${(new Date()).toLocaleString('jp-JP', { timeZone: 'JST' })}`);
 }
 
 function generatePlReport(list) {
@@ -51,7 +52,7 @@ function generatePlReport(list) {
       resultSeed.push(character[0]);
     }
     resultMap[character[0]].count += Number(character[2]);
-    resultMap[character[0]].sheets.push(`${character[1]}\n${character[6]}`);
+    resultMap[character[0]].sheets.push(`${character[1]}\n${character[9]}`);
   });
   let maxColumnCount = 0;
   return resultSeed.map((pl)=>{
@@ -72,12 +73,15 @@ function updateSheet() {
   const ytsheetUrl = getYtsheetUrl();
   const getTargetRowLinks = getSheetRawLinks();
   const rawJsons = getTargetRowLinks.map((rawLink)=>{ return getCharacterSheetJsonWithRawLink(rawLink, ytsheetUrl) });
-  const resultArray = rawJsons.map((json)=>{
+  const pcReport = rawJsons.map((json)=>{
     return [
       json.playerName,
       json.characterName,
       io.github.shunshun94.trpg.sw2.ytsheet.countSession.countSession(json),
       json.level,
+      json.historyExpTotal,
+      json.historyMoneyTotal,
+      json.historyHonorTotal,
       json.sheetDescriptionS,
       json.updateTime,
       json.sheetURL,
@@ -87,9 +91,9 @@ function updateSheet() {
       json.lvSag || 0,
       json.lvRan || 0
     ];
-  });
-  const plReport = generatePlReport(resultArray);
-  const pcListRange = writeToSheet(resultArray, OUTPUT_SHEET_NAME);
+  }).filter((data)=>{ return data[2]; });
+  const plReport = generatePlReport(pcReport);
+  const pcListRange = writeToSheet(pcReport, OUTPUT_SHEET_NAME);
   const plListRange = writeToSheet(plReport, PLINFO_SHEET_NAME);
   updateLastUpdate();
   return pcListRange.getValues();
